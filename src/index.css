@@ -22,15 +22,23 @@
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: "Outfit", system-ui, sans-serif;
+  font-family: "Lora", Georgia, serif;
   font-weight: 400;
   font-size: 1rem;
   line-height: 1.6;
   color: var(--ink);
-  background: var(--bg);
+  background-color: #f3eee8;
   background-image:
-    radial-gradient(ellipse 120% 80% at 50% -20%, rgba(196, 168, 130, 0.18), transparent),
-    radial-gradient(ellipse 80% 50% at 100% 50%, rgba(139, 115, 85, 0.06), transparent);
+    linear-gradient(rgba(250, 248, 245, 0.52), rgba(250, 248, 245, 0.52)),
+    url("../14998.JPG");
+  background-position: center 80%;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+html {
+  min-height: 100%;
 }
 
 #root {
@@ -40,7 +48,7 @@ body {
 h1,
 h2,
 h3 {
-  font-family: "Cormorant Garamond", Georgia, serif;
+  font-family: "Cinzel", Georgia, serif;
   font-weight: 500;
   line-height: 1.2;
   margin: 0;
@@ -73,15 +81,17 @@ a:hover {
 }
 
 .hero-names {
+  font-family: "Great Vibes", "Brush Script MT", cursive;
   font-size: clamp(2.25rem, 6vw, 3.25rem);
-  font-weight: 500;
+  font-weight: 400;
+  letter-spacing: 0.02em;
   margin-bottom: 0.5rem;
 }
 
 .hero-ampersand {
-  font-family: "Cormorant Garamond", Georgia, serif;
+  font-family: "Great Vibes", "Brush Script MT", cursive;
   font-style: italic;
-  font-size: 1.5rem;
+  font-size: 2rem;
   color: var(--accent);
   margin: 0.35rem 0;
 }
@@ -93,10 +103,206 @@ a:hover {
   margin-top: 1.25rem;
 }
 
-.personal-greeting {
-  font-family: "Cormorant Garamond", Georgia, serif;
-  font-size: clamp(1.35rem, 3.5vw, 1.75rem);
+.save-date-showcase {
+  width: min(calc(100vw - 2rem), 980px);
+  margin: 1.55rem auto 0;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 1.25rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(168, 140, 106, 0.32);
+  box-shadow: 0 14px 28px rgba(44, 40, 37, 0.14);
+  display: grid;
+  gap: 1.4rem;
+}
+
+.save-photo-panel {
+  display: flex;
+  justify-content: center;
+}
+
+.save-photo-frame {
+  position: relative;
+  width: min(100%, 360px);
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  overflow: visible;
+  border: 4px solid rgba(174, 128, 88, 0.65);
+  box-shadow:
+    0 12px 28px rgba(44, 40, 37, 0.2),
+    0 0 0 10px rgba(255, 255, 255, 0.7);
+  animation: save-panel-float 4.2s ease-in-out infinite;
+}
+
+.save-photo-frame::before,
+.save-photo-frame::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.save-photo-frame::before {
+  inset: -26px;
+  border: 3px solid rgba(174, 128, 88, 0.88);
+  border-radius: 18% 82% 74% 26% / 33% 24% 76% 67%;
+  transform: rotate(14deg);
+}
+
+.save-photo-frame::after {
+  inset: -18px;
+  border: 2px solid rgba(174, 128, 88, 0.62);
+  border-radius: 74% 26% 19% 81% / 58% 65% 35% 42%;
+  transform: rotate(-9deg);
+}
+
+.save-photo-frame img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.save-calendar-panel {
+  text-align: center;
+  min-width: 0;
+}
+
+.save-date-title {
+  margin: 0;
+  font-family: "Great Vibes", "Brush Script MT", cursive;
+  font-size: clamp(1.85rem, 4.1vw, 2.8rem);
+  white-space: normal;
+  line-height: 1.05;
+  color: #a26f4a;
+}
+
+.save-date-names {
+  margin: 0.35rem 0 0;
+  font-family: "Cinzel", Georgia, serif;
+  font-size: clamp(1rem, 2.2vw, 1.25rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #3f3832;
+}
+
+.save-date-line {
+  margin: 0.45rem 0 0;
+  font-family: "Cinzel", Georgia, serif;
+  color: #6f655d;
+  letter-spacing: 0.08em;
+  font-size: 0.9rem;
+}
+
+.save-month-title {
+  margin: 1.25rem 0 0.45rem;
+  font-family: "Cinzel", Georgia, serif;
+  font-size: 1.15rem;
+  letter-spacing: 0.08em;
+  color: #4d443d;
+  text-transform: uppercase;
+}
+
+.calendar-weekdays,
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.3rem;
+}
+
+.calendar-weekdays span {
+  color: #7e746d;
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
   font-weight: 500;
+  text-align: center;
+}
+
+.calendar-grid {
+  margin-top: 0.35rem;
+}
+
+.calendar-cell {
+  position: relative;
+  min-height: 2.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: 1rem;
+  color: #59504a;
+  background: transparent;
+}
+
+.calendar-cell.empty-day {
+  background: transparent;
+}
+
+.calendar-cell.wedding-day {
+  background: linear-gradient(140deg, #f0d4bf, #e9bfa0);
+  color: #6d3f1f;
+  font-weight: 600;
+  box-shadow: 0 8px 16px rgba(162, 111, 74, 0.26);
+  animation: date-highlight 2.8s ease-in-out infinite;
+}
+
+.calendar-heart-mark {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(173, 82, 109, 0.4);
+  font-size: 2rem;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.calendar-day-number {
+  position: relative;
+  z-index: 2;
+}
+
+@keyframes save-panel-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@keyframes date-highlight {
+  0%,
+  100% {
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    transform: scale(1.06) translateY(-1px);
+  }
+}
+
+
+@media (min-width: 860px) {
+  .save-date-showcase {
+    grid-template-columns: minmax(300px, 370px) minmax(430px, 1fr);
+    align-items: center;
+    padding: 1.5rem 2rem;
+  }
+
+  .save-date-title {
+    white-space: nowrap;
+  }
+}
+
+.personal-greeting {
+  font-family: "Great Vibes", "Brush Script MT", cursive;
+  font-size: clamp(1.35rem, 3.5vw, 1.75rem);
+  font-weight: 400;
   color: var(--ink);
   margin: 0 0 0.75rem;
 }
@@ -112,7 +318,7 @@ a:hover {
 }
 
 .admin-h2 {
-  font-family: "Cormorant Garamond", Georgia, serif;
+  font-family: "Cinzel", Georgia, serif;
   font-size: 1.5rem;
   font-weight: 500;
   margin: 0 0 0.5rem;
@@ -209,7 +415,7 @@ code {
 }
 
 .detail-value {
-  font-family: "Cormorant Garamond", Georgia, serif;
+  font-family: "Cinzel", Georgia, serif;
   font-size: 1.35rem;
 }
 
@@ -217,6 +423,175 @@ code {
   font-size: 0.95rem;
   color: var(--ink-muted);
   font-weight: 300;
+}
+
+.venue-photo {
+  margin: 1rem 0 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 24px rgba(44, 40, 37, 0.12);
+}
+
+.venue-photo img {
+  width: 100%;
+  display: block;
+  height: auto;
+  object-fit: contain;
+}
+
+.order-card {
+  padding-top: 2.2rem;
+}
+
+.order-title {
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: clamp(1.5rem, 3.8vw, 2.05rem);
+  margin-bottom: 1.6rem;
+}
+
+.timeline {
+  position: relative;
+  padding: 0.25rem 0;
+}
+
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #4b4641;
+  transform: translateX(-50%);
+}
+
+.timeline-row {
+  display: grid;
+  grid-template-columns: 1fr 58px 1fr;
+  align-items: center;
+  min-height: 78px;
+  animation: timeline-fade-up 0.75s ease both;
+}
+
+.timeline-row:nth-child(1) { animation-delay: 0.05s; }
+.timeline-row:nth-child(2) { animation-delay: 0.16s; }
+.timeline-row:nth-child(3) { animation-delay: 0.27s; }
+.timeline-row:nth-child(4) { animation-delay: 0.38s; }
+
+.timeline-side {
+  display: flex;
+}
+
+.timeline-side-left {
+  justify-content: flex-end;
+  text-align: right;
+  padding-right: 1.1rem;
+}
+
+.timeline-side-right {
+  justify-content: flex-start;
+  text-align: left;
+  padding-left: 1.1rem;
+}
+
+.timeline-entry {
+  max-width: 240px;
+}
+
+.timeline-time {
+  font-family: "Cinzel", Georgia, serif;
+  font-size: 1.42rem;
+  line-height: 1.1;
+  color: #332f2c;
+}
+
+.timeline-event {
+  margin-top: 0.1rem;
+  font-family: "Great Vibes", "Brush Script MT", cursive;
+  font-size: 1.85rem;
+  line-height: 1.05;
+  color: #332f2c;
+}
+
+.timeline-center {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timeline-mark {
+  width: 36px;
+  height: 2px;
+  background: #4b4641;
+}
+
+.timeline-icon {
+  font-size: 1.95rem;
+  line-height: 1;
+  filter: grayscale(18%);
+  animation: icon-float 2.8s ease-in-out infinite;
+}
+
+@keyframes timeline-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes icon-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@media (max-width: 720px) {
+  .timeline::before {
+    left: 24px;
+    transform: none;
+  }
+
+  .timeline-row {
+    grid-template-columns: 48px 1fr;
+    min-height: 88px;
+  }
+
+  .timeline-center {
+    grid-column: 1;
+    grid-row: 1;
+    justify-content: flex-start;
+    padding-left: 6px;
+  }
+
+  .timeline-mark {
+    width: 18px;
+  }
+
+  .timeline-side,
+  .timeline-side-left,
+  .timeline-side-right {
+    grid-column: 2;
+    text-align: left;
+    justify-content: flex-start;
+    padding: 0;
+  }
+
+  .timeline-row.left .timeline-side-left,
+  .timeline-row.left .timeline-side-right,
+  .timeline-row.right .timeline-side-left,
+  .timeline-row.right .timeline-side-right {
+    display: flex;
+  }
+
+  .timeline-row.left .timeline-side-right,
+  .timeline-row.right .timeline-side-left {
+    display: none;
+  }
+
+  .timeline-event {
+    font-size: 1.45rem;
+  }
 }
 
 .rsvp-intro {
@@ -272,7 +647,7 @@ select {
   padding: 0.65rem 0.85rem;
   border: 1px solid var(--border);
   border-radius: 8px;
-  font-family: inherit;
+  font-family: "Lora", Georgia, serif;
   font-size: 1rem;
   background: #fff;
   color: var(--ink);
@@ -324,7 +699,7 @@ textarea {
   justify-content: center;
   gap: 0.5rem;
   padding: 0.85rem 1.75rem;
-  font-family: inherit;
+  font-family: "Cinzel", Georgia, serif;
   font-size: 1rem;
   font-weight: 500;
   border: none;
