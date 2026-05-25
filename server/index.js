@@ -11,7 +11,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isProd = process.env.NODE_ENV === "production";
 const PORT = Number(process.env.PORT) || 8787;
 
-const WEDDING_TITLE = "Qiu Tong Xu & Qing Han";
+const WEDDING_TITLE = "Elena Han & Jack Xu";
 const WEDDING_DATE = "July 23, 2026";
 
 function escapeHtml(s) {
@@ -56,15 +56,14 @@ app.use(express.json({ limit: "2mb" }));
 app.post("/api/rsvp", async (req, res) => {
   try {
     const { attending, inviteeEmail, guests } = req.body;
+    const inviteeEmailValue =
+      typeof inviteeEmail === "string" ? inviteeEmail.trim() : "";
 
     if (typeof attending !== "boolean") {
       return res.status(400).json({ error: "Invalid attending value" });
     }
 
     if (attending) {
-      if (!inviteeEmail || typeof inviteeEmail !== "string") {
-        return res.status(400).json({ error: "Missing invitee email" });
-      }
       if (!Array.isArray(guests) || guests.length === 0) {
         return res.status(400).json({ error: "Missing guest list" });
       }
@@ -100,7 +99,7 @@ app.post("/api/rsvp", async (req, res) => {
             error: `Age is required for child guest: ${fullName}`,
           });
         }
-        rows.push([fullName, inviteeEmail.trim(), childOrAdult, age]);
+        rows.push([fullName, inviteeEmailValue, childOrAdult, age]);
       }
 
       await sheets.spreadsheets.values.append({
@@ -170,13 +169,13 @@ app.post("/api/send-invitations", requireAdmin, async (req, res) => {
   <p>You are warmly invited to celebrate the wedding of <strong>${escapeHtml(WEDDING_TITLE)}</strong> on <strong>${escapeHtml(WEDDING_DATE)}</strong>.</p>
   <p><a href="${link}" style="color: #8b7355;">Open your invitation & RSVP</a></p>
   <p style="font-size: 0.9em; color: #6b6560;">If the button does not work, copy this link into your browser:<br/>${escapeHtml(link)}</p>
-  <p>With love,<br/>Qiu Tong & Qing</p>
+  <p>With love,<br/>Elena Han & Jack Xu</p>
 </body>
 </html>`.trim();
 
       try {
         await transporter.sendMail({
-          from: `"Qiu Tong & Qing" <${user}>`,
+          from: `"Elena Han & Jack Xu" <${user}>`,
           to: email,
           subject: `You're invited — ${WEDDING_TITLE}`,
           html,
