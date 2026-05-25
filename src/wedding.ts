@@ -1,7 +1,7 @@
 export const WEDDING = {
-  partner1: "Qiu Tong Xu",
-  partner2: "Qing Han",
-  date: "July 23, 2026",
+  partner1: "Elena",
+  partner2: "Jack",
+  date: "Thursday, July 23, 2026",
   time: "3:30 PM",
   venue: "Spencer's at the Waterfront",
   address: "1340 Lakeshore Rd., Burlington, ON L7S 1B1",
