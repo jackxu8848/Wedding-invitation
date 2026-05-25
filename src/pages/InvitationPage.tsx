@@ -3,6 +3,8 @@ import { useSearchParams } from "react-router-dom";
 import { WEDDING } from "../wedding";
 
 const apiBase = import.meta.env.VITE_API_BASE_URL || "";
+const saveDatePhotoImg = new URL("../../14999.JPG", import.meta.url).href;
+const venuePhotoImg = new URL("../../15000.png", import.meta.url).href;
 
 type Attending = "yes" | "no" | "";
 
@@ -42,9 +44,19 @@ export default function InvitationPage() {
     }
   }, [searchParams]);
 
-  const [manualEmail, setManualEmail] = useState("");
-
-  const contactEmail = inviteEmailParam || manualEmail.trim();
+  const contactEmail = inviteEmailParam;
+  const july2026Days = useMemo(() => {
+    const year = 2026;
+    const monthIndex = 6;
+    const firstDay = new Date(year, monthIndex, 1).getDay();
+    const mondayFirstOffset = (firstDay + 6) % 7;
+    const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+    const cells: Array<number | null> = [];
+    for (let i = 0; i < mondayFirstOffset; i += 1) cells.push(null);
+    for (let day = 1; day <= daysInMonth; day += 1) cells.push(day);
+    while (cells.length < 42) cells.push(null);
+    return cells;
+  }, []);
 
   const [attending, setAttending] = useState<Attending>("");
   const [partySize, setPartySize] = useState(1);
@@ -57,8 +69,6 @@ export default function InvitationPage() {
   const [submitted, setSubmitted] = useState(false);
 
   const showGuestSection = attending === "yes";
-  const showEmailField = attending === "yes" && !inviteEmailParam;
-
   const onPartySizeChange = (n: number) => {
     const size = Math.max(1, Math.min(20, n));
     setPartySize(size);
@@ -84,7 +94,6 @@ export default function InvitationPage() {
     const e: string[] = [];
     if (!attending) e.push("Please let us know if you can attend.");
     if (attending === "yes") {
-      if (!contactEmail) e.push("Please enter your email so we can match your RSVP.");
       if (partySize < 1) e.push("Party size must be at least 1.");
       guests.forEach((row, i) => {
         if (!row.name.trim())
@@ -145,7 +154,6 @@ export default function InvitationPage() {
     return (
       <div className="app">
         <header className="hero">
-          <p className="hero-ornament">—</p>
           <h1 className="hero-names">
             {WEDDING.partner1}
             <div className="hero-ampersand">&</div>
@@ -165,7 +173,6 @@ export default function InvitationPage() {
   return (
     <div className="app">
       <header className="hero">
-        <p className="hero-ornament">—</p>
         {inviteName ? (
           <p className="personal-greeting">Dear {inviteName},</p>
         ) : null}
@@ -175,6 +182,47 @@ export default function InvitationPage() {
           {WEDDING.partner2}
         </h1>
         <p className="hero-tagline">invite you to their wedding celebration</p>
+        <section className="save-date-showcase" aria-label="Save the date calendar">
+          <div className="save-photo-panel">
+            <div className="save-photo-frame">
+              <img
+                src={saveDatePhotoImg}
+                alt="Elena and Jack"
+                loading="lazy"
+              />
+            </div>
+          </div>
+          <div className="save-calendar-panel">
+            <p className="save-date-title">Save Our Date</p>
+            <p className="save-date-names">
+              {WEDDING.partner1} &amp; {WEDDING.partner2}
+            </p>
+            <p className="save-date-line">{WEDDING.date} | {WEDDING.time}</p>
+            <p className="save-month-title">July 2026</p>
+            <div className="calendar-weekdays">
+              {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((w) => (
+                <span key={w}>{w}</span>
+              ))}
+            </div>
+            <div className="calendar-grid">
+              {july2026Days.map((day, index) => (
+                <span
+                  key={`${day ?? "empty"}-${index}`}
+                  className={`calendar-cell${day === 23 ? " wedding-day" : ""}${day == null ? " empty-day" : ""}`}
+                >
+                  {day === 23 ? (
+                    <>
+                      <span className="calendar-day-number">23</span>
+                      <span className="calendar-heart-mark" aria-hidden="true">❤</span>
+                    </>
+                  ) : (
+                    day
+                  )}
+                </span>
+              ))}
+            </div>
+          </div>
+        </section>
       </header>
 
       <section className="card" aria-labelledby="details-heading">
@@ -196,6 +244,55 @@ export default function InvitationPage() {
               {WEDDING.address}
             </a>
           </div>
+          <figure className="venue-photo">
+            <img
+              src={venuePhotoImg}
+              alt="Spencer's at the Waterfront venue"
+              loading="lazy"
+            />
+          </figure>
+        </div>
+      </section>
+
+      <section className="card order-card" aria-labelledby="timeline-heading">
+        <h2 id="timeline-heading" className="order-title">Order of Events</h2>
+        <div className="timeline" aria-label="Wedding day timeline">
+          {[
+            { time: "3:30 PM", title: "WELCOME!", icon: "📍" },
+            { time: "4:30 PM", title: "Ceremony", icon: "💍" },
+            { time: "5:00 PM", title: "Cocktail Reception", icon: "🥂" },
+            { time: "7:00 PM", title: "Dinner", icon: "🍽️" },
+            { time: "9:00 PM", title: "After Party", icon: "🎉" },
+          ].map((item, index) => (
+            <div
+              key={`${item.time}-${item.title}`}
+              className={`timeline-row ${index % 2 === 0 ? "left" : "right"}`}
+            >
+              <div className="timeline-side timeline-side-left">
+                {index % 2 === 0 ? (
+                  <div className="timeline-entry">
+                    <div className="timeline-time">{item.time}</div>
+                    <div className="timeline-event">{item.title}</div>
+                  </div>
+                ) : (
+                  <div className="timeline-icon" aria-hidden="true">{item.icon}</div>
+                )}
+              </div>
+              <div className="timeline-center" aria-hidden="true">
+                <span className="timeline-mark" />
+              </div>
+              <div className="timeline-side timeline-side-right">
+                {index % 2 === 0 ? (
+                  <div className="timeline-icon" aria-hidden="true">{item.icon}</div>
+                ) : (
+                  <div className="timeline-entry">
+                    <div className="timeline-time">{item.time}</div>
+                    <div className="timeline-event">{item.title}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -207,22 +304,6 @@ export default function InvitationPage() {
         </p>
 
         <form onSubmit={handleSubmit} noValidate>
-          {showEmailField && (
-            <div className="field">
-              <label className="field-label" htmlFor="contact-email">
-                Your email
-              </label>
-              <input
-                id="contact-email"
-                type="email"
-                autoComplete="email"
-                value={manualEmail}
-                onChange={(e) => setManualEmail(e.target.value)}
-                placeholder="Same email we used for your invitation"
-              />
-            </div>
-          )}
-
           <div className="field">
             <span className="field-label">Will you attend?</span>
             <div className="radio-group">
@@ -248,7 +329,6 @@ export default function InvitationPage() {
                   onChange={() => {
                     setAttending("no");
                     setAllergies("");
-                    setManualEmail("");
                   }}
                 />
                 Regretfully declines
