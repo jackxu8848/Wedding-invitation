@@ -14,11 +14,13 @@ type GuestRow = {
   name: string;
   kind: GuestKind;
   age: string;
+  dietary: string;
 };
 
 function syncGuests(prev: GuestRow[], size: number): GuestRow[] {
   const next = prev.slice(0, size);
-  while (next.length < size) next.push({ name: "", kind: "", age: "" });
+  while (next.length < size)
+    next.push({ name: "", kind: "", age: "", dietary: "" });
   return next;
 }
 
@@ -59,11 +61,11 @@ export default function InvitationPage() {
   }, []);
 
   const [attending, setAttending] = useState<Attending>("");
+  const [declineName, setDeclineName] = useState("");
   const [partySize, setPartySize] = useState(1);
   const [guests, setGuests] = useState<GuestRow[]>([
-    { name: "", kind: "", age: "" },
+    { name: "", kind: "", age: "", dietary: "" },
   ]);
-  const [allergies, setAllergies] = useState("");
   const [errors, setErrors] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -103,8 +105,11 @@ export default function InvitationPage() {
           e.push(`Please enter an age for child guest ${i + 1}.`);
       });
     }
+    if (attending === "no" && !declineName.trim()) {
+      e.push("Please enter your name.");
+    }
     return e;
-  }, [attending, partySize, guests, contactEmail]);
+  }, [attending, partySize, guests, declineName]);
 
   const handleSubmit = async (ev: FormEvent) => {
     ev.preventDefault();
@@ -123,14 +128,16 @@ export default function InvitationPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           attending: attendingBool,
-          inviteeEmail: contactEmail,
-          inviteeName: inviteName,
-          allergies: allergies.trim(),
+          inviteeEmail: attendingBool ? contactEmail : "",
+          inviteeName: attendingBool ? inviteName : declineName.trim(),
           guests: attendingBool
             ? guests.map((g) => ({
                 fullName: g.name.trim(),
                 childOrAdult: g.kind === "child" ? "Child" : "Adult",
                 age: g.kind === "child" ? g.age.trim() : "",
+                dietary: g.dietary.trim(),
+                allergies: g.dietary.trim(),
+                dietaryRestrictions: g.dietary.trim(),
               }))
             : [],
         }),
@@ -328,13 +335,29 @@ export default function InvitationPage() {
                   checked={attending === "no"}
                   onChange={() => {
                     setAttending("no");
-                    setAllergies("");
+                    setDeclineName((prev) => prev || inviteName);
                   }}
                 />
                 Regretfully declines
               </label>
             </div>
           </div>
+
+          {attending === "no" && (
+            <div className="field">
+              <label className="field-label" htmlFor="decline-name">
+                Your name
+              </label>
+              <input
+                id="decline-name"
+                type="text"
+                autoComplete="name"
+                value={declineName}
+                onChange={(e) => setDeclineName(e.target.value)}
+                placeholder="Name as we should list you"
+              />
+            </div>
+          )}
 
           {showGuestSection && (
             <>
@@ -417,24 +440,24 @@ export default function InvitationPage() {
                         />
                       </div>
                     )}
+                    <div className="field" style={{ marginBottom: 0 }}>
+                      <label className="field-label" htmlFor={`dietary-${i}`}>
+                        Dietary restrictions
+                      </label>
+                      <textarea
+                        id={`dietary-${i}`}
+                        className="guest-dietary-input"
+                        value={g.dietary}
+                        onChange={(e) =>
+                          setGuestField(i, "dietary", e.target.value)
+                        }
+                        placeholder="Allergies or dietary needs for this guest (optional)"
+                      />
+                    </div>
                   </div>
                 </div>
               ))}
             </>
-          )}
-
-          {showGuestSection && (
-            <div className="field">
-              <label className="field-label" htmlFor="allergies">
-                Allergies or dietary restrictions
-              </label>
-              <textarea
-                id="allergies"
-                value={allergies}
-                onChange={(e) => setAllergies(e.target.value)}
-                placeholder="Let us know about any food allergies or dietary needs for anyone in your party. If none, you can leave this blank."
-              />
-            </div>
           )}
 
           {errors.length > 0 && (
