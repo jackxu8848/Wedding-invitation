@@ -666,6 +666,10 @@ textarea {
   resize: vertical;
 }
 
+.guest-dietary-input {
+  min-height: 72px;
+}
+
 .guest-block {
   padding: 1.25rem;
   margin-bottom: 1rem;
