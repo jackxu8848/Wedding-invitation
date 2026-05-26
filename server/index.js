@@ -32,6 +32,83 @@ function getSheetsClient() {
   return google.sheets({ version: "v4", auth });
 }
 
+function sheetRange(sheetName, a1) {
+  const escaped =
+    /[^A-Za-z0-9_]/.test(sheetName) ? `'${sheetName.replace(/'/g, "''")}'` : sheetName;
+  return `${escaped}!${a1}`;
+}
+
+function guestDietary(guest) {
+  if (typeof guest.allergies === "string") return guest.allergies.trim();
+  if (typeof guest.dietary === "string") return guest.dietary.trim();
+  if (typeof guest.dietaryRestrictions === "string") {
+    return guest.dietaryRestrictions.trim();
+  }
+  return "";
+}
+
+async function appendDeclineRow(sheets, spreadsheetId, sheetName, name) {
+  const existing = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: sheetRange(sheetName, "A:F"),
+  });
+  const row = (existing.data.values ?? []).length + 1;
+
+  await sheets.spreadsheets.values.batchUpdate({
+    spreadsheetId,
+    requestBody: {
+      valueInputOption: "USER_ENTERED",
+      data: [
+        {
+          range: sheetRange(sheetName, `A${row}`),
+          values: [[name]],
+        },
+        {
+          range: sheetRange(sheetName, `F${row}`),
+          values: [["No"]],
+        },
+      ],
+    },
+  });
+}
+
+async function appendRsvpRows(sheets, spreadsheetId, sheetName, rows) {
+  const normalized = rows.map((row) => {
+    const next = Array.isArray(row) ? [...row] : [];
+    while (next.length < 6) next.push("");
+    return next.slice(0, 6);
+  });
+
+  const existing = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: sheetRange(sheetName, "A:F"),
+  });
+  const existingRows = existing.data.values ?? [];
+  const startRow = existingRows.length + 1;
+  const endRow = startRow + normalized.length - 1;
+
+  await sheets.spreadsheets.values.batchUpdate({
+    spreadsheetId,
+    requestBody: {
+      valueInputOption: "USER_ENTERED",
+      data: [
+        {
+          range: sheetRange(sheetName, `A${startRow}:D${endRow}`),
+          values: normalized.map((row) => row.slice(0, 4)),
+        },
+        {
+          range: sheetRange(sheetName, `E${startRow}:E${endRow}`),
+          values: normalized.map((row) => [row[4] ?? ""]),
+        },
+        {
+          range: sheetRange(sheetName, `F${startRow}:F${endRow}`),
+          values: normalized.map((row) => [row[5] ?? ""]),
+        },
+      ],
+    },
+  });
+}
+
 function requireAdmin(req, res, next) {
   const secret = process.env.ADMIN_SECRET;
   if (!secret) {
@@ -55,37 +132,40 @@ app.use(express.json({ limit: "2mb" }));
 
 app.post("/api/rsvp", async (req, res) => {
   try {
-    const { attending, inviteeEmail, guests } = req.body;
+    const { attending, inviteeEmail, inviteeName, guests } = req.body;
     const inviteeEmailValue =
       typeof inviteeEmail === "string" ? inviteeEmail.trim() : "";
+    const inviteeNameValue =
+      typeof inviteeName === "string" ? inviteeName.trim() : "";
 
     if (typeof attending !== "boolean") {
       return res.status(400).json({ error: "Invalid attending value" });
     }
+
+    const spreadsheetId = process.env.SPREADSHEET_ID;
+    const sheetName = process.env.SHEET_NAME || "Sheet1";
+    if (!spreadsheetId) {
+      return res.status(503).json({
+        error:
+          "Spreadsheet is not configured (SPREADSHEET_ID). Ask the host to set it up.",
+      });
+    }
+
+    const sheets = getSheetsClient();
+    if (!sheets) {
+      return res.status(503).json({
+        error:
+          "Google Sheets credentials missing. Set GOOGLE_APPLICATION_CREDENTIALS to your service account JSON file path.",
+      });
+    }
+
+    const rows = [];
 
     if (attending) {
       if (!Array.isArray(guests) || guests.length === 0) {
         return res.status(400).json({ error: "Missing guest list" });
       }
 
-      const spreadsheetId = process.env.SPREADSHEET_ID;
-      const sheetName = process.env.SHEET_NAME || "Sheet1";
-      if (!spreadsheetId) {
-        return res.status(503).json({
-          error:
-            "Spreadsheet is not configured (SPREADSHEET_ID). Ask the host to set it up.",
-        });
-      }
-
-      const sheets = getSheetsClient();
-      if (!sheets) {
-        return res.status(503).json({
-          error:
-            "Google Sheets credentials missing. Set GOOGLE_APPLICATION_CREDENTIALS to your service account JSON file path.",
-        });
-      }
-
-      const rows = [];
       for (const g of guests) {
         const fullName = String(g.fullName || "").trim();
         const childOrAdult = g.childOrAdult === "Child" ? "Child" : "Adult";
@@ -99,17 +179,30 @@ app.post("/api/rsvp", async (req, res) => {
             error: `Age is required for child guest: ${fullName}`,
           });
         }
-        rows.push([fullName, inviteeEmailValue, childOrAdult, age]);
+        const dietary = guestDietary(g);
+        rows.push([
+          fullName,
+          inviteeEmailValue,
+          childOrAdult,
+          age,
+          dietary,
+          "Yes",
+        ]);
       }
-
-      await sheets.spreadsheets.values.append({
+    } else {
+      if (!inviteeNameValue) {
+        return res.status(400).json({ error: "Please enter your name" });
+      }
+      await appendDeclineRow(
+        sheets,
         spreadsheetId,
-        range: `${sheetName}!A:D`,
-        valueInputOption: "USER_ENTERED",
-        insertDataOption: "INSERT_ROWS",
-        requestBody: { values: rows },
-      });
+        sheetName,
+        inviteeNameValue
+      );
+      return res.json({ ok: true });
     }
+
+    await appendRsvpRows(sheets, spreadsheetId, sheetName, rows);
 
     res.json({ ok: true });
   } catch (err) {
