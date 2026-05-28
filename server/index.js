@@ -14,6 +14,25 @@ const PORT = Number(process.env.PORT) || 8787;
 const WEDDING_TITLE = "Elena Han & Jack Xu";
 const WEDDING_DATE = "July 23, 2026";
 
+const INVITATION_ATTACHMENT_PATH = path.join(__dirname, "..", "invitation.jpg");
+const PARKING_ATTACHMENT_PATH = path.join(__dirname, "..", "parking.pdf");
+
+function getInvitationEmailAttachments() {
+  const missing = [];
+  if (!fs.existsSync(INVITATION_ATTACHMENT_PATH)) missing.push("invitation.jpg");
+  if (!fs.existsSync(PARKING_ATTACHMENT_PATH)) missing.push("parking.pdf");
+  if (missing.length > 0) {
+    return { ok: false, missing };
+  }
+  return {
+    ok: true,
+    attachments: [
+      { filename: "invitation.jpg", path: INVITATION_ATTACHMENT_PATH },
+      { filename: "parking.pdf", path: PARKING_ATTACHMENT_PATH },
+    ],
+  };
+}
+
 function escapeHtml(s) {
   return String(s)
     .replace(/&/g, "&amp;")
@@ -236,6 +255,13 @@ app.post("/api/send-invitations", requireAdmin, async (req, res) => {
       });
     }
 
+    const attachmentResult = getInvitationEmailAttachments();
+    if (!attachmentResult.ok) {
+      return res.status(503).json({
+        error: `Invitation email attachments missing: ${attachmentResult.missing.join(", ")}`,
+      });
+    }
+
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: { user, pass },
@@ -272,6 +298,7 @@ app.post("/api/send-invitations", requireAdmin, async (req, res) => {
           to: email,
           subject: `You're invited — ${WEDDING_TITLE}`,
           html,
+          attachments: attachmentResult.attachments,
         });
         results.sent += 1;
       } catch (e) {
